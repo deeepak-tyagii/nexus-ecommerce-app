@@ -15,8 +15,8 @@ const logger = winston.createLogger({
 
 const mockProducts = [
   // Electronics
-  { id: 1, name: 'QuantumCore Pro Laptop', description: 'High-performance laptop for demanding professional workloads.', price: 2250, emoji: '💻' },
-  { id: 2, name: 'Aether-9 Smartphone', description: 'The latest generation smartphone with a stunning holographic display.', price: 999, emoji: '📱' },
+  { id: 1, name: 'QuantumCore Pro Laptop', description: 'High-performance laptop for demanding professional workloads.', price: 999, emoji: '💻' },
+  { id: 2, name: 'Aether-9 Smartphone', description: 'The latest generation smartphone with a stunning holographic display.', price: 499, emoji: '📱' },
   { id: 3, name: 'Acoustic Bliss Headphones', description: 'Studio-grade, noise-cancelling headphones for immersive audio.', price: 349, emoji: '🎧' },
   { id: 4, name: 'Chrono-Sync Smartwatch', description: 'Seamlessly integrate your digital life and track biometrics.', price: 449, emoji: '⌚' },
   { id: 5, name: 'LumiCapture 8K Camera', description: 'Capture stunning photos and cinematic 8K video.', price: 1650, emoji: '📷' },
