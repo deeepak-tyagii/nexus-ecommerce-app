@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nexus Commerce | Enterprise Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background-color: #f8fafc; }
+        .sticky-header { position: sticky; top: 0; z-index: 50; }
+        .hero-gradient { background: linear-gradient(90deg, #4f46e5 0%, #a259ff 100%); }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // --- Universal API Service Definitions ---
+        const CATALOG_API_URL = '/api/catalog';
+        const CART_API_URL = '/api/cart';
+        const ORDER_API_URL = '/api/order';
+
+        const catalogService = {
+          getProducts: async () => {
+            const response = await fetch(`${CATALOG_API_URL}/products`);
+            return await response.json();
+          },
+          triggerError: async () => {
+            try {
+                const response = await fetch(`${CATALOG_API_URL}/error`);
+                return response.statusText;
+            } catch (error) {
+                return error.message;
+            }
+          }
+        };
+
+        const cartService = {
+          getCart: async (userId) => {
+            const response = await fetch(`${CART_API_URL}/cart/${userId}`);
+            return await response.json();
+          },
+          addToCart: async (userId, productId, quantity) => {
+            const response = await fetch(`${CART_API_URL}/cart/${userId}/add`, {
+              method: 'POST', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ productId, quantity })
+            });
+            return await response.json();
+          },
+          removeFromCart: async (userId, productId) => {
+             const response = await fetch(`${CART_API_URL}/cart/${userId}/remove`, {
+              method: 'POST', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ productId })
+            });
+            return await response.json();
+          },
+          clearCart: async (userId) => {
+            await fetch(`${CART_API_URL}/cart/${userId}/clear`, { method: 'POST' });
+            return { items: {} };
+          }
+        };
+
+        const orderService = {
+          getOrders: async (userId) => {
+            const response = await fetch(`${ORDER_API_URL}/orders/${userId}`);
+            return await response.json();
+          },
+          createOrder: async (userId, cart) => {
+            const response = await fetch(`${ORDER_API_URL}/orders/${userId}/create`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ cart })
+            });
+            if (!response.ok) return null;
+            return await response.json();
+          },
+        };
+        
+        // --- React Components ---
+        const ProductCatalog = ({ onAddToCart }) => {
+          const [products, setProducts] = useState([]);
+          useEffect(() => {
+            const fetchProducts = async () => setProducts(await catalogService.getProducts());
+            fetchProducts();
+          }, []);
+          return (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="text-center mb-16">
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">Curated Collections</h1>
+                <p className="mt-4 text-lg text-slate-600">Discover premium products from our enterprise-grade catalog.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {products.map(product => (
+                  <div key={product.id} className="bg-white rounded-lg overflow-hidden border border-slate-200 hover:shadow-2xl transition-shadow duration-300 flex flex-col group">
+                    <div className="text-6xl bg-slate-100 h-48 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">{product.emoji}</div>
+                    <div className="p-6 flex-grow flex flex-col">
+                        <h3 className="text-lg font-semibold text-slate-900">{product.name}</h3>
+                        <p className="text-slate-600 mt-2 text-sm flex-grow">{product.description}</p>
+                        <div className="mt-6 flex justify-between items-center">
+                          <span className="text-2xl font-bold text-slate-900">${product.price.toLocaleString()}</span>
+                          <button onClick={() => onAddToCart(product.id, 1)} className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors transform hover:scale-105 shadow-md hover:shadow-lg text-sm flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>
+                            Add to Cart
+                          </button>
+                        </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        };
+
+        const ShoppingCart = ({ userId, cart, setCart, products, onCheckout }) => {
+          const handleRemove = async (productId) => setCart(await cartService.removeFromCart(userId, productId));
+          const cartItems = Object.entries(cart.items || {}).map(([productId, quantity]) => ({ ...products.find(p => p.id === parseInt(productId)), quantity }));
+          const subtotal = cartItems.reduce((total, item) => total + (item.price || 0) * item.quantity, 0);
+          const tax = subtotal * 0.08;
+          const total = subtotal + tax;
+
+          return (
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <h2 className="text-3xl font-extrabold text-slate-900 mb-10">Review Your Cart</h2>
+              {cartItems.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-xl border border-slate-200"><p className="text-slate-600 text-lg">Your shopping cart is empty.</p><p className="text-6xl mt-6 opacity-50">🛒</p></div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 space-y-4">
+                      {cartItems.map(item => (
+                        <div key={item.id} className="flex items-center border-b border-slate-200 py-4 last:border-b-0">
+                          <div className="text-4xl bg-slate-100 p-3 rounded-lg mr-5">{item.emoji}</div>
+                          <div className="flex-grow"><h3 className="font-semibold text-slate-900">{item.name}</h3><p className="text-slate-500 text-sm">Quantity: {item.quantity}</p></div>
+                          <div className="flex items-center"><span className="text-lg font-semibold w-24 text-right mr-6 text-slate-800">${((item.price || 0) * item.quantity).toFixed(2)}</span><button onClick={() => handleRemove(item.id)} className="text-slate-400 hover:text-red-600 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 h-fit">
+                        <h3 className="text-xl font-semibold border-b pb-4 mb-4">Order Summary</h3>
+                        <div className="space-y-3 text-slate-700">
+                            <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span>Taxes (8%)</span><span>${tax.toFixed(2)}</span></div>
+                            <div className="flex justify-between font-bold text-lg border-t pt-4 mt-4"><span>Total</span><span>${total.toFixed(2)}</span></div>
+                        </div>
+                        <button onClick={onCheckout} className="w-full mt-6 bg-green-500 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-green-600 transition-colors transform hover:scale-105 shadow-md hover:shadow-lg">Proceed to Checkout</button>
+                    </div>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const OrderServiceComponent = ({ userId, cart, setCart, onOrderPlaced, products }) => {
+          const [orders, setOrders] = useState([]);
+          const fetchOrders = useCallback(async () => setOrders((await orderService.getOrders(userId)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))), [userId]);
+          useEffect(() => { fetchOrders(); }, [fetchOrders]);
+          const handleCreateOrder = async () => {
+            const newOrder = await orderService.createOrder(userId, cart);
+            if (newOrder) {
+                setCart(await cartService.clearCart(userId));
+                onOrderPlaced();
+                fetchOrders();
+            }
+          };
+          const cartItems = Object.entries(cart.items || {}).map(([productId, quantity]) => ({ ...products.find(p => p.id === parseInt(productId)), quantity }));
+          const totalPrice = cartItems.reduce((total, item) => total + (item.price || 0) * item.quantity, 0);
+
+          return (
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <h2 className="text-3xl font-extrabold text-slate-900 mb-10">Finalize Purchase & Order History</h2>
+              <div className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 mb-12">
+                <h3 className="text-xl font-semibold mb-4 text-slate-800">Review Your Order</h3>
+                {cartItems.length > 0 ? (
+                    <div className="space-y-3 mb-6 border-b pb-6">
+                        {cartItems.map(item => (
+                            <div key={item.id} className="flex justify-between items-center text-slate-700">
+                                <span>{item.emoji} {item.name} x {item.quantity}</span>
+                                <span>${((item.price || 0) * item.quantity).toFixed(2)}</span>
+                            </div>
+                        ))}
+                        <div className="flex justify-between items-center text-xl font-bold pt-4">
+                            <span>Total</span>
+                            <span>${totalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                ) : <p className="text-slate-500 mb-4">Your cart is empty. Add items to place an order.</p>}
+                <button onClick={handleCreateOrder} disabled={cartItems.length === 0} className="w-full bg-indigo-600 text-white px-6 py-4 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-lg font-bold shadow-md hover:shadow-lg">Confirm & Place Order</button>
+              </div>
+
+              <h3 className="text-2xl font-bold mb-6 text-slate-800">Transaction History</h3>
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-16 bg-white rounded-xl border border-slate-200"><p className="text-slate-600">You have no past orders.</p><p className="text-6xl mt-6 opacity-50">📦</p></div>
+                ) : (
+                  orders.map(order => (
+                    <div key={order.id} className="bg-white p-5 rounded-xl border border-slate-200">
+                      <div className="flex justify-between items-center border-b border-slate-200 pb-3 mb-3"><div><h3 className="font-semibold text-slate-900">Order ID: {order.id}</h3><p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleString()}</p></div><span className="bg-blue-100 text-blue-800 text-sm font-semibold mr-2 px-3 py-1 rounded-full">{order.status}</span></div>
+                      <div className="mt-2">{Object.entries(order.items).map(([productId, quantity]) => { const product = products.find(p => p.id === parseInt(productId)); const totalItemPrice = (product?.price || 0) * quantity; return (<div key={productId} className="flex justify-between text-sm py-1 text-slate-700"><span>{product?.emoji} {product?.name || 'Unknown Product'} x {quantity}</span><span>${totalItemPrice.toFixed(2)}</span></div>) })}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        function App() {
+          const [activeTab, setActiveTab] = useState('catalog');
+          const [cart, setCart] = useState({ items: {} });
+          const [products, setProducts] = useState([]);
+          const [errorStatus, setErrorStatus] = useState('');
+          const userId = 'user123';
+          
+          const handleTriggerError = useCallback(async () => {
+            setErrorStatus('Triggering error...');
+            const status = await catalogService.triggerError();
+            setErrorStatus(`Error triggered. Backend responded: ${status}. Check service logs.`);
+            setTimeout(() => setErrorStatus(''), 5000);
+          }, []);
+
+          useEffect(() => {
+            const loadInitialData = async () => {
+                const productData = await catalogService.getProducts();
+                setProducts(productData);
+                setCart(await cartService.getCart(userId));
+            }
+            loadInitialData();
+            
+            if (window.location.pathname === '/error') {
+                handleTriggerError();
+            }
+          }, [userId, handleTriggerError]);
+          
+          const handleAddToCart = async (productId, quantity) => setCart(await cartService.addToCart(userId, productId, quantity));
+          
+          const renderContent = () => {
+            switch (activeTab) {
+              case 'catalog': return <ProductCatalog onAddToCart={handleAddToCart} />;
+              case 'cart': return <ShoppingCart userId={userId} cart={cart} setCart={setCart} products={products} onCheckout={() => setActiveTab('orders')} />;
+              case 'orders': return <OrderServiceComponent userId={userId} cart={cart} setCart={setCart} onOrderPlaced={() => setActiveTab('orders')} products={products}/>;
+              default: return null;
+            }
+          };
+          const cartItemCount = Object.values(cart.items || {}).reduce((sum, quantity) => sum + quantity, 0);
+          return (
+            <div>
+                <header className="sticky-header bg-white/80 backdrop-blur-lg border-b border-slate-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center py-4">
+                            <button onClick={() => setActiveTab('catalog')} className="flex items-center space-x-2 cursor-pointer">
+                                <svg className="h-8 w-auto text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2.01M12 18v-1m0-1v-.01m0-1V14m0-1.01V12m0 6a2 2 0 100-4 2 2 0 000 4z" /></svg>
+                                <span className="text-2xl font-extrabold text-slate-900">Nexus Commerce</span>
+                            </button>
+                            <nav className="flex items-center space-x-2 bg-slate-100 p-1 rounded-full">
+                                {['catalog', 'cart', 'orders'].map(tab => (
+                                  <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-300 relative ${activeTab === tab ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-100'}`}>
+                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    {tab === 'cart' && cartItemCount > 0 && (<span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white font-bold">{cartItemCount}</span>)}
+                                  </button>
+                                ))}
+                            </nav>
+                        </div>
+                    </div>
+                </header>
+                {errorStatus && <div className="max-w-7xl mx-auto mt-4 p-4 text-center bg-red-100 text-red-800 rounded-lg shadow-md">{errorStatus}</div>}
+                <main>{renderContent()}</main>
+            </div>
+          );
+        }
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
