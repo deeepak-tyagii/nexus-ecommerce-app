@@ -1,7 +1,7 @@
 # Ignore Node.js dependencies
-ecommerce-backend/catalog-service/node_modules/
-ecommerce-backend/cart-service/node_modules/
-ecommerce-backend/order-service/node_modules/
+backend/catalog-service/node_modules/
+backend/cart-service/node_modules/
+backend/order-service/node_modules/
 
 # Ignore system files
 .DS_Store
