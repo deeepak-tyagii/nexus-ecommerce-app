@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   catalog-service:
+    container_name: catalog-service
     build: ./backend/catalog-service
     ports:
       - "4001:4001"
@@ -8,6 +9,7 @@ services:
       - PORT=4001
 
   cart-service:
+    container_name: cart-service
     build: ./backend/cart-service
     ports:
       - "4002:4002"
@@ -15,6 +17,7 @@ services:
       - PORT=4002
 
   order-service:
+    container_name: order-service
     build: ./backend/order-service
     ports:
       - "4003:4003"
@@ -22,6 +25,7 @@ services:
       - PORT=4003
 
   frontend:
+    container_name: frontend
     build: ./frontend
     ports:
       - "8080:80"
