@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  catalog-service:
+    build: ./backend/catalog-service
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+
+  cart-service:
+    build: ./backend/cart-service
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+
+  order-service:
+    build: ./backend/order-service
+    ports:
+      - "4003:4003"
+    environment:
+      - PORT=4003
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - catalog-service
+      - cart-service
+      - order-service
