@@ -1,0 +1,46 @@
+# --- Ingress ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce-ingress
+  namespace: ecommerce
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  rules:
+  - http:
+      paths:
+      # Rule for Catalog API
+      - path: /api/catalog
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 4001
+      # Rule for Cart API
+      - path: /api/cart
+        pathType: Prefix
+        backend:
+          service:
+            name: cart-service
+            port:
+              number: 4002
+      # Rule for Order API
+      - path: /api/order
+        pathType: Prefix
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 4003
+      # Default rule for the Frontend Application
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
