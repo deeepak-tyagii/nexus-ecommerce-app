@@ -12,9 +12,15 @@ metadata:
   namespace: ecommerce
 spec:
   replicas: 1
-  selector: { matchLabels: { app: catalog-service } }
+  selector:
+    matchLabels:
+      app: catalog-service
   template:
-    metadata: { labels: { app: catalog-service } }
+    metadata:
+      labels:
+        app: catalog-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
     spec:
       containers:
       - name: catalog-service
@@ -38,7 +44,8 @@ metadata:
   name: catalog-service
   namespace: ecommerce
 spec:
-  selector: { app: catalog-service }
+  selector:
+    app: catalog-service
   ports:
   - protocol: TCP
     port: 4001
@@ -52,9 +59,15 @@ metadata:
   namespace: ecommerce
 spec:
   replicas: 1
-  selector: { matchLabels: { app: cart-service } }
+  selector:
+    matchLabels:
+      app: cart-service
   template:
-    metadata: { labels: { app: cart-service } }
+    metadata:
+      labels:
+        app: cart-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
     spec:
       containers:
       - name: cart-service
@@ -71,7 +84,6 @@ spec:
           limits:
             cpu: "200m"
             memory: "256Mi"
-          
 ---
 apiVersion: v1
 kind: Service
@@ -79,7 +91,8 @@ metadata:
   name: cart-service
   namespace: ecommerce
 spec:
-  selector: { app: cart-service }
+  selector:
+    app: cart-service
   ports:
   - protocol: TCP
     port: 4002
@@ -93,9 +106,15 @@ metadata:
   namespace: ecommerce
 spec:
   replicas: 1
-  selector: { matchLabels: { app: order-service } }
+  selector:
+    matchLabels:
+      app: order-service
   template:
-    metadata: { labels: { app: order-service } }
+    metadata:
+      labels:
+        app: order-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
     spec:
       containers:
       - name: order-service
@@ -119,7 +138,8 @@ metadata:
   name: order-service
   namespace: ecommerce
 spec:
-  selector: { app: order-service }
+  selector:
+    app: order-service
   ports:
   - protocol: TCP
     port: 4003
@@ -133,9 +153,13 @@ metadata:
   namespace: ecommerce
 spec:
   replicas: 1
-  selector: { matchLabels: { app: frontend } }
+  selector:
+    matchLabels:
+      app: frontend
   template:
-    metadata: { labels: { app: frontend } }
+    metadata:
+      labels:
+        app: frontend
     spec:
       containers:
       - name: frontend
@@ -156,7 +180,8 @@ metadata:
   name: frontend-service
   namespace: ecommerce
 spec:
-  selector: { app: frontend }
+  selector:
+    app: frontend
   ports:
   - protocol: TCP
     port: 80
