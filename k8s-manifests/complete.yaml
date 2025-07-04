@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: <actual-image>
+        image: deepaktyagi048/nexus-catalog
         ports:
         - containerPort: 4001
         env:
@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: cart-service
-        image: <actual-image>
+        image: deepaktyagi048/nexus-cart
         ports:
         - containerPort: 4002
         env:
@@ -99,7 +99,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: <actual-image>
+        image: deepaktyagi048/nexus-order
         ports:
         - containerPort: 4003
         env:
@@ -139,7 +139,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: <actual-image>
+        image: deepaktyagi048/nexus-frontend
         ports:
         - containerPort: 80
         resources:
